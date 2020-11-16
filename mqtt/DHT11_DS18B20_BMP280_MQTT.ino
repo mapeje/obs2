@@ -29,12 +29,12 @@ Adafruit_BMP280 bmp280;
 
 //Wifi
 
-#define wifi_ssid "SSID"
-#define wifi_password "pwd"
+#define wifi_ssid "naboo_NoT_24"
+#define wifi_password "77NoT77NoT"
 
-#define mqtt_server "IP"
-#define mqtt_user "usr"
-#define mqtt_password "pwd"
+#define mqtt_server "obciot.ddns.net"
+#define mqtt_user "mqtt"
+#define mqtt_password "mqtt"
 
 #define humidity_inside_topic "obs2/environment/inside/relativeHumidity"
 #define temperature_inside_topic "obs2/environment/inside/temperature"
@@ -121,6 +121,14 @@ void reconnect() {
   }
 }
 
+// DS18B20 calibration
+      float temp =0;
+      float RawHigh = 95.0; //Reading from calibration in boiling water
+      float RawLow = -1.5; // REading from calibration in ice-bucket
+      float ReferenceHigh = 99.9; //boiling water
+      float ReferenceLow = 0; //ice-bucket
+      float RawRange = RawHigh - RawLow;
+      float ReferenceRange = ReferenceHigh - ReferenceLow;
 
 void loop() {
   
@@ -129,7 +137,7 @@ void loop() {
       }
       client.loop();
 
-      // Wait a few seconds between measurements. (20s)
+      // Wait a few seconds between measurements.(20s)
       delay(20000);
       
       // Reading temperature or humidity takes about 250 milliseconds!
@@ -140,6 +148,7 @@ void loop() {
       // DS18B20 Temperature value
       sensors.requestTemperatures(); 
       float temp = sensors.getTempCByIndex(0);
+      float tempCorrectedValue = (((temp - RawLow) * ReferenceRange) / RawRange) + ReferenceLow;
 
       // get temperature, pressure and altitude from library
       float temperature = bmp280.readTemperature();  // get temperature
@@ -162,7 +171,7 @@ void loop() {
       Serial.print(t);
       Serial.print("ºC\t ");
       Serial.print("Engine temperature: ");
-      Serial.print(temp);
+      Serial.print(tempCorrectedValue);
       Serial.print("ºC\t");
       Serial.print("Outside Temperature: ");
       Serial.print(temperature);
@@ -175,7 +184,7 @@ void loop() {
       
       client.publish(temperature_inside_topic, String(t).c_str(), true);
       client.publish(humidity_inside_topic, String(h).c_str(), true);
-      client.publish(temperature_engine_topic, String(temp).c_str(), true);
+      client.publish(temperature_engine_topic, String(tempCorrectedValue).c_str(), true);
       client.publish(temperature_outside_topic, String(temperature).c_str(), true);
       client.publish(pressure_outside_topic, String(pressure).c_str(), true);
 }
