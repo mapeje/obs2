@@ -7,8 +7,8 @@
 #define DHTPIN D4 // what digital pin we're connected to D1mini
 #define DHTTYPE DHT11 // DHT 11 // Select sensor DHT11/DHT22!
 
-#define wifi_ssid "SSID"
-#define wifi_password "SSID_PWD"
+#define wifi_ssid "${{ secrets.wifi_ssid }}"
+#define wifi_password "${{ secrets.wifi_pwd }}"
 
 #define mqtt_server "mqtt_Server"
 #define mqtt_user "usr"
